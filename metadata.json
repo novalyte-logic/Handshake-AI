@@ -1,0 +1,6 @@
+{
+  "name": "ProofReach",
+  "description": "Evidence-backed job application suite with tailored materials, company research, and verified outreach.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
