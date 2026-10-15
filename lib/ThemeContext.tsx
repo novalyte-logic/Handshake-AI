@@ -13,14 +13,27 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>(() => {
-    if (typeof window !== 'undefined') {
-      const savedTheme = localStorage.getItem('proofreach_theme_v1') as Theme | null;
-      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-      return savedTheme === 'dark' || savedTheme === 'light' ? savedTheme : prefersDark ? 'dark' : 'light';
-    }
-    return 'light';
-  });
+  // Keep the server and the first browser render identical. Browser-only theme
+  // preferences are applied after hydration so React does not have to replace
+  // the rendered tree.
+  const [theme, setThemeState] = useState<Theme>('light');
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('proofreach_theme_v1') as Theme | null;
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const initialTheme =
+      savedTheme === 'dark' || savedTheme === 'light'
+        ? savedTheme
+        : prefersDark
+          ? 'dark'
+          : 'light';
+
+    const frameId = window.requestAnimationFrame(() => {
+      setThemeState(initialTheme);
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
+  }, []);
 
   useEffect(() => {
     if (theme === 'dark') {
